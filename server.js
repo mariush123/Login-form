@@ -33,29 +33,45 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'form.html'));
 });
 
+
+
 // Route to handle form submission
 app.post('/post', async (req, res) => {
-  try {
-    const { name, password } = req.body;
-
-    // Validate data
-    if (!name || !password) {
-      throw new Error('Name and password are required.');
-    }
-
-    const users = new Users({
-      name,
-      password
-    });
-
-    await users.save();
-    console.log(users);
-    res.send("Login Successful");
+  const data = {
+    name: req.body.username,
+    password: req.body.password
+  } 
+try{
+  const userdata = await Users.insertMany(data);
+  console.log(userdata);
+  res.send("Login Success!")
   } catch (error) {
     console.error(error);
     res.status(500).send("Failed to save data.");
   }
 });
+
+app.post('/login',async(req,res)=>{
+  try{
+    const check =await Users.findOne({name:req.body.username});
+    if(!check){
+      res.send("Id not found");
+      return;
+    }
+    const isPasswordMatch = req.body.password ===check.password;
+    if(!isPasswordMatch){
+      res.send("Wrong Password");
+      return;
+    }
+    else{
+      res.send("Welcome");
+      return;
+    }
+  }
+  catch{}
+    res.send("Wrong Details");
+    return;
+})
 
 // Start server
 app.listen(port, () => {
